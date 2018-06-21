@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DoubanSearch</title>
+    <style>
+        #q{
+            width: 300px;
+            height: 30px;
+            line-height: 30px;
+            border: 1px solid #f90;
+            padding: 5px;
+            font-size: 18px;
+        }
+		dl {border-bottom: 1px dotted #000;}
+        dt {font-weight: bold;}
+        dd img{
+            width:200px;
+            height:250px;
+        }
+        .page{
+            display: flex;
+        }
+        .page .index,.page .firstPage,.page .lastPage,.prePage,.nextPage{
+            border: 1px solid #ff9900;
+            color: #fff;
+            background: #000;
+            width: 60px;
+            height: 20px;
+            text-align: center;
+            margin: 0px 5px;
+        }
+        .page .active{
+            background: red;
+        }
+    </style>
+    <script>
+        function  fn1(data){
+            console.log(data);
+            var aEntry = data.entry;
+            var oL = document.getElementById('list');
+            var page = document.getElementsByClassName('page');
+            var tS = document.getElementById('stext');
+            var currentPage = Math.ceil(data['opensearch:startIndex'].$t/10);
+            tS.innerHTML = data.title.$t+':'+data['opensearch:totalResults'].$t;
+            var html = '';
+
+            for(var i=0; i< aEntry.length; i++){
+                html += '<dl><dt>'+ aEntry[i].title.$t +'</dt><dd><img src="'+ aEntry[i].link[2]['@href'] +'" /></dd></dl>';
+            }
+            oL.innerHTML = html;
+            html = '';
+            if(aEntry.length != 0){
+                var maxPage = Math.ceil(data['opensearch:totalResults'].$t/10);
+                //console.log(maxPage);
+                var tpage = 5;
+                if(maxPage <= tpage)
+                    tpage = maxPage;
+                if(currentPage > tpage)
+                    tpage = currentPage;
+                html += '<input type="button" class="firstPage" value="首页">';
+                html += '<input type="button" class="prePage" value="上一页">';
+                console.log(currentPage);
+                for(t = tpage-4; t <= tpage; t++)
+                {
+                    if(currentPage == t){
+                        html += '<input type="button" class="index active" value='+t+'>';
+                    }else{
+                        html += '<input type="button" class="index" value='+t+'>';
+                    }
+                }
+                html += '<input type="button" class="nextPage" value="下一页">'
+                html += '<input type="button" class="lastPage" value="尾页">'
+                page[0].innerHTML = html;
+                fn2(currentPage,maxPage,tpage);
+            }
+        }
+        function fn2(currentPage,maxPage,tpage){
+            var btnFirst = document.getElementsByClassName('firstPage');
+            var btnLast = document.getElementsByClassName('lastPage');
+            var indexPage = document.getElementsByClassName('index');
+            var nextPage = document.getElementsByClassName('nextPage');
+            var prePage = document.getElementsByClassName('prePage');
+            var q = document.getElementById('q');
+            var oScript = document.createElement('script');
+            btnFirst[0].onclick = function(){
+                oScript.src = 'http://api.douban.com/book/subjects?q='+q.value+'&alt=xd&callback=fn1&start-index=1&max-results=10';
+                document.body.appendChild(oScript);
+            }
+            //console.log(indexPage.length);
+            //var index = 0;
+            /*
+            for(var i=0; i < indexPage.length; i++) {
+                //console.log(i);
+                //index = i;
+                var starIndex = i*10+1;
+                indexPage[i].onclick = function(){
+                    oScript.src = 'http://api.douban.com/book/subjects?q='+q.value+'&alt=xd&callback=fn1&start-index='+starIndex+'&max-results=10';
+                    document.body.appendChild(oScript);
+                }
+            }
+            */
+            prePage[0].onclick = function(){
+                currentPage = currentPage - 2;
+                console.log(currentPage);
+                oScript.src = 'http://api.douban.com/book/subjects?q='+q.value+'&alt=xd&callback=fn1&start-index='+(currentPage*10+1)+'&max-results=10';
+                document.body.appendChild(oScript);
+            }
+            nextPage[0].onclick = function(){
+                console.log(maxPage,currentPage);
+                if(maxPage>currentPage){
+                oScript.src = 'http://api.douban.com/book/subjects?q='+q.value+'&alt=xd&callback=fn1&start-index='+(currentPage*10+1)+'&max-results=10';
+                document.body.appendChild(oScript);
+                }
+            }
+            indexPage[0].onclick = function(){
+                oScript.src = 'http://api.douban.com/book/subjects?q='+q.value+'&alt=xd&callback=fn1&start-index='+((tpage-5)*10+1)+'&max-results=10';
+                document.body.appendChild(oScript);
+            }
+            indexPage[1].onclick = function(){
+                oScript.src = 'http://api.douban.com/book/subjects?q='+q.value+'&alt=xd&callback=fn1&start-index='+((tpage-4)*10+1)+'&max-results=10';
+                document.body.appendChild(oScript);
+            }
+            indexPage[2].onclick = function(){
+                oScript.src = 'http://api.douban.com/book/subjects?q='+q.value+'&alt=xd&callback=fn1&start-index='+((tpage-3)*10+1)+'&max-results=10';
+                document.body.appendChild(oScript);
+            }
+            indexPage[3].onclick = function(){
+                oScript.src = 'http://api.douban.com/book/subjects?q='+q.value+'&alt=xd&callback=fn1&start-index='+((tpage-2)*10+1)+'&max-results=10';
+                document.body.appendChild(oScript);
+            }
+            indexPage[4].onclick = function(){
+                oScript.src = 'http://api.douban.com/book/subjects?q='+q.value+'&alt=xd&callback=fn1&start-index='+((tpage-1)*10+1)+'&max-results=10';
+                document.body.appendChild(oScript);
+            }
+            btnLast[0].onclick = function(){
+                console.log('lastpage');
+                oScript.src = 'http://api.douban.com/book/subjects?q='+q.value+'&alt=xd&callback=fn1&start-index='+((maxPage-1)*10+1)+'&max-results=10';
+                document.body.appendChild(oScript);
+            }
+        }
+        window.onload = function(){
+            var q = document.getElementById('q');
+            var btn = document.getElementById('btnS');
+
+            btn.onclick = function(){
+                if(q.value != '')
+                {
+                    var oScript = document.createElement('script');
+                    //oScript.src = 'http://api.douban.com/book/subjects?q='+q.value+'&alt=xd&callback=fn1&start-index=2011&max-results=10';
+                    oScript.src = 'http://api.douban.com/book/subjects?q='+q.value+'&alt=xd&callback=fn1';
+                    document.body.appendChild(oScript);
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+<input type="text" id="q"><input type="button" value="搜索" id="btnS">
+<p id="stext"></p>
+<div class="page">
+</div>
+<div id="list">
+</div>
+</body>
+</html>
